@@ -1,14 +1,18 @@
+// controllers/authController.js
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+/* ─────────────────────────── REGISTER ─────────────────────────── */
 exports.register = (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password } = req.body;
+  const role = 'student';              // 🔒 Always register as student
 
   if (!name || !email || !password) {
     return res.status(400).json({ msg: 'Please fill all fields' });
   }
 
+  // Check if user already exists
   db.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
     if (err) return res.status(500).json({ msg: 'Database error', err });
 
@@ -19,11 +23,12 @@ exports.register = (req, res) => {
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
 
+      // Insert new student
       db.query(
         'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-        [name, email, hashedPassword, role || 'student'],
-        (err, result) => {
-          if (err) return res.status(500).json({ msg: 'Database error', err });
+        [name, email, hashedPassword, role],
+        (err2) => {
+          if (err2) return res.status(500).json({ msg: 'Database error', err: err2 });
 
           res.status(201).json({ msg: 'User registered successfully' });
         }
@@ -34,6 +39,7 @@ exports.register = (req, res) => {
   });
 };
 
+/* ───────────────────────────── LOGIN ───────────────────────────── */
 exports.login = (req, res) => {
   const { email, password } = req.body;
 

@@ -23,18 +23,23 @@ router.post('/send', verifyToken, allowRoles('admin'), (req, res) => {
 });
 
 // 2. Get all notifications for the logged-in user (student/admin)
-router.get('/', verifyToken, (req, res) => {
-  const userId = req.user.id;
+router.post('/', verifyToken, allowRoles('admin'), (req, res) => {
+  const { user_id, message } = req.body;
+
+  if (!user_id || !message) {
+    return res.status(400).json({ msg: 'User ID and message are required' });
+  }
 
   db.query(
-    'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC',
-    [userId],
-    (err, results) => {
-      if (err) return res.status(500).json({ msg: 'Database error', err });
-      res.status(200).json(results);
+    'INSERT INTO notifications (user_id, message) VALUES (?, ?)',
+    [user_id, message],
+    (err, result) => {
+      if (err) return res.status(500).json({ msg: 'Database error', err });  // ← This triggered
+      res.status(201).json({ msg: 'Notification sent successfully' });
     }
   );
 });
+
 
 // 3. Mark a specific notification as read
 router.put('/notifications/read/:id', verifyToken, (req, res) => {

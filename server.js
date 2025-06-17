@@ -9,16 +9,17 @@ const submissionRoutes = require('./routes/submissionRoutes');
 const gradeRoutes = require('./routes/gradeRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const libraryRoutes = require('./routes/libraryRoutes');
+const path = require('path'); // ✅ at the top
 
 dotenv.config();
 
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/grades', gradeRoutes);
-app.use('/api', notificationRoutes);
+// app.use('/api', notificationRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/library', libraryRoutes);
 

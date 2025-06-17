@@ -89,4 +89,35 @@ exports.getMySubmissions = (req, res) => {
     res.status(200).json(formatted);
   });
 };
+// 👨‍🏫 Admin grades a submission
+exports.gradeSubmission = (req, res) => {
+  const { submission_id } = req.params;
+  const { grade } = req.body;
+
+  if (grade == null || grade === '') {
+    return res.status(400).json({ msg: 'Grade is required' });
+  }
+
+  // You can add validation for grade range here (0-100) if you want
+  const numericGrade = Number(grade);
+  if (isNaN(numericGrade) || numericGrade < 0 || numericGrade > 100) {
+    return res.status(400).json({ msg: 'Grade must be a number between 0 and 100' });
+  }
+
+  const query = `UPDATE submissions SET grade = ? WHERE id = ?`;
+
+  db.query(query, [numericGrade, submission_id], (err, result) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ msg: 'Database error', err });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ msg: 'Submission not found' });
+    }
+
+    res.status(200).json({ msg: 'Grade updated successfully' });
+  });
+};
+
 // 👨‍🏫 Admin views a specific student's submission
