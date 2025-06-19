@@ -113,6 +113,25 @@ router.put('/mark-all-read', verifyToken, (req, res) => {
     }
   );
 });
+router.post('/send-multiple', verifyToken, allowRoles('admin'), (req, res) => {
+  const { notifications } = req.body;
+
+  if (!Array.isArray(notifications) || notifications.length === 0) {
+    return res.status(400).json({ msg: 'Notifications array is required' });
+  }
+
+  const values = notifications.map(n => [n.user_id, n.message]);
+
+  db.query(
+    'INSERT INTO notifications (user_id, message) VALUES ?',
+    [values],
+    (err) => {
+      if (err) return res.status(500).json({ msg: 'Database error', err });
+      res.status(201).json({ msg: 'Notifications sent successfully' });
+    }
+  );
+});
+const { Router } = require('express');
 
 
 module.exports = router;
